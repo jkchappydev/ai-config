@@ -13,3 +13,10 @@ claude/references/
 
 # OS 부산물
 .DS_Store
+
+# 업무 보고 스킬 (report.local.md 가 있는 기기에서만 사용)
+claude/skills/daily-report/
+claude/skills/weekly-report/
+claude/skills/google-sheets/
+claude/skills/report-agent/
+claude/skills/REPORT_SKILL_README.md
