@@ -78,6 +78,13 @@ MSYS=winsymlinks:nativestrict ./install.sh
 마지막에 링크와 지침 import를 검증한다. 하나라도 깨져 있으면 종료코드 1로 끝나므로,
 `설치 완료.`가 출력되고 종료코드가 0인지 확인하면 된다.
 
+## 플러그인·MCP 설정 요약
+
+- **superpowers** (브레인스토밍·계획·TDD·디버깅·코드 리뷰 작업 절차): `plugins.conf`에 등록해서 `install.sh`로 설치한다.
+- **context7** (라이브러리·프레임워크 최신 공식 문서 조회): `plugins.conf`에 등록해서 `install.sh`로 설치한다. 키는 필요 없다.
+- **claude-code-setup** (프로젝트에 맞는 hook·스킬·MCP 추천): `plugins.conf`에 등록해서 `install.sh`로 설치한다.
+- **21st** (자연어 설명으로 UI 컴포넌트 생성): https://21st.dev/mcp 에서 키를 발급받아 `claude mcp add -s user`로 등록한다.
+
 ## 플러그인
 
 플러그인 본체는 저장소에 담지 않는다. `installed_plugins.json`에 기기별 절대경로가 들어가고
