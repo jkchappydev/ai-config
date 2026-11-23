@@ -62,10 +62,18 @@ cd ~/ai-config
 
 클론 위치는 어디여도 된다. `~/ai-config`가 아닌 곳에 받아도 `install.sh`가 호환 링크를 만든다.
 `~/.claude`가 비어 있어도 되고, 그 안의 다른 내용(로그인 정보, 세션 기록, 플러그인)은 건드리지 않는다.
-즉 **클론 + `./install.sh`** 만으로 지침·규칙·스킬·커맨드가 모두 적용된다.
+즉 **클론 + `./install.sh`** 만으로 지침·규칙·스킬·커맨드·플러그인이 모두 적용된다.
+API 키가 필요한 MCP는 아래 [API 키 등록](#api-키-등록)을 한 번 더 진행한다.
 
 `install.sh`는 여러 번 실행해도 안전하다. 링크 자리에 기존 실제 파일이 있으면
 `~/.ai-config-backup-<시각>/`으로 옮긴 뒤 링크로 교체한다.
+
+Windows(Git Bash)에서는 심볼릭 링크 생성에 권한이 필요하다. 개발자 모드를 켜거나,
+관리자 터미널에서 아래처럼 실행한다.
+
+```bash
+MSYS=winsymlinks:nativestrict ./install.sh
+```
 
 마지막에 링크와 지침 import를 검증한다. 하나라도 깨져 있으면 종료코드 1로 끝나므로,
 `설치 완료.`가 출력되고 종료코드가 0인지 확인하면 된다.
@@ -79,7 +87,12 @@ cd ~/ai-config
 
 ```
 marketplace claude-plugins-official anthropics/claude-plugins-official
-plugin      superpowers@claude-plugins-official
+marketplace 21st-dev 21st-dev/magic-mcp
+
+plugin superpowers@claude-plugins-official
+plugin context7@claude-plugins-official
+plugin claude-code-setup@claude-plugins-official
+plugin 21st@21st-dev
 ```
 
 이미 등록·설치돼 있으면 건너뛴다. `claude` CLI를 못 찾으면 경고만 남기고 링크 설치는 그대로 끝내므로,
@@ -89,12 +102,66 @@ Claude Code를 나중에 깔았다면 `./install.sh`를 다시 실행하면 된�
 `claude/settings.json`의 `enabledPlugins`는 켜짐 여부를 정한다. 한쪽만 고치면
 설치는 됐는데 꺼져 있거나, 켜라는 설정만 있고 실체가 없는 상태가 된다.
 
-Windows(Git Bash)에서는 심볼릭 링크 생성에 권한이 필요하다. 개발자 모드를 켜거나,
-관리자 터미널에서 아래처럼 실행한다.
+`claude plugin marketplace add`, `claude plugin install`로 직접 설치하면 CLI가 `settings.json`의
+`extraKnownMarketplaces`와 `enabledPlugins`를 자동으로 채운다. 이때는 `plugins.conf`만 손으로 맞추면 된다.
+
+### 설치 중인 플러그인
+
+| 플러그인 | 마켓플레이스 | 용도 | 포함 구성 | 기기별 준비 | 홈페이지 |
+|---|---|---|---|---|---|
+| `superpowers` | `claude-plugins-official` | 브레인스토밍, 계획, TDD, 디버깅, 코드 리뷰 등 작업 절차 | 스킬, hook | 없음 | [github.com/obra/superpowers](https://github.com/obra/superpowers) |
+| `context7` | `claude-plugins-official` | 라이브러리·프레임워크 최신 공식 문서 조회 | MCP | 없음 | [context7.com](https://context7.com) |
+| `claude-code-setup` | `claude-plugins-official` | 코드베이스를 분석해 hook, 스킬, MCP, 서브에이전트 추천 (읽기 전용) | 스킬 | 없음 | [claude-plugins-official/plugins/claude-code-setup](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-code-setup) |
+| `21st` | `21st-dev` (`21st-dev/magic-mcp`) | 자연어 설명으로 UI 컴포넌트 생성 | MCP, 스킬(`21st-ui`) | `API_KEY_21ST` 환경변수 | [21st.dev](https://21st.dev), [github.com/21st-dev/magic-mcp](https://github.com/21st-dev/magic-mcp) |
+
+### MCP는 플러그인에 포함된다
+
+이 저장소에는 `.mcp.json`을 따로 두지 않는다. MCP를 제공하는 플러그인은 자기 폴더 안에 `.mcp.json`을 갖고 있고,
+플러그인을 설치하고 켜면 Claude Code가 그 MCP 서버를 자동으로 등록한다.
+같은 서버를 `.mcp.json`이나 `claude mcp add`로 또 등록하면 도구가 중복으로 잡힌다.
+
+| MCP | 제공 플러그인 | 연결 주소 | 인증 |
+|---|---|---|---|
+| `context7` | `context7` | `https://mcp.context7.com/mcp` | 없음 (키 없이 사용, 호출량 제한 있음) |
+| `21st` | `21st` | `https://21st.dev/api/mcp` | `x-api-key: ${API_KEY_21ST}` |
+
+플러그인이 없는 MCP를 `claude mcp add -s user`로 추가하면 `~/.claude.json`에 저장되어 이 저장소로 공유되지 않는다.
+모든 기기에서 쓸 MCP는 가능하면 플러그인으로 설치한다.
+
+### API 키 등록
+
+API 키는 저장소에 넣지 않는다. 플러그인 설정은 환경변수를 참조하므로 기기마다 한 번 등록하고 Claude Code를 다시 시작한다.
+키가 없으면 해당 MCP만 연결에 실패하고 나머지는 정상 동작한다.
+
+| 플러그인 | API 키 | 환경변수 | 발급 홈페이지 | 비용 |
+|---|---|---|---|---|
+| `superpowers` | 필요 없음 | - | - | 무료 |
+| `context7` | 선택 (현재 키 없이 사용) | - | https://context7.com/dashboard?tab=settings | 무료 사용 가능, 키 등록 시 호출량 제한 완화 |
+| `claude-code-setup` | 필요 없음 | - | - | 무료 |
+| `21st` | 필수 | `API_KEY_21ST` | https://21st.dev/mcp | 무료 키 제공 |
+
+`context7` 플러그인의 MCP 설정에는 키를 넣는 자리가 없다. 키를 쓰려면 플러그인 대신 `Context7-API-Key` 헤더를 넣은
+MCP 서버를 직접 등록해야 하므로, 호출량 제한에 자주 걸릴 때만 검토한다.
+
+`21st` 키 발급 순서는 아래와 같다.
+
+1. https://21st.dev/mcp 에 접속해 로그인한다.
+2. 페이지에서 API 키를 생성하고 복사한다.
+3. 아래 명령으로 환경변수에 등록한 뒤 Claude Code를 다시 시작한다.
+
+```powershell
+# Windows (PowerShell)
+[Environment]::SetEnvironmentVariable("API_KEY_21ST", "<발급받은 키>", "User")
+```
 
 ```bash
-MSYS=winsymlinks:nativestrict ./install.sh
+# macOS (~/.zshrc)
+echo 'export API_KEY_21ST="<발급받은 키>"' >> ~/.zshrc
 ```
+
+### Codex
+
+플러그인은 Claude Code 전용이다. Codex에서 같은 MCP를 쓰려면 그 기기의 `~/.codex/config.toml`에 직접 추가한다.
 
 ## 기기 전용으로 두는 것 (git 제외)
 
