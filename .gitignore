@@ -20,3 +20,6 @@ claude/skills/weekly-report/
 claude/skills/google-sheets/
 claude/skills/report-agent/
 claude/skills/REPORT_SKILL_README.md
+
+# 수동 백업 파일
+*.bak
