@@ -1,10 +1,16 @@
-Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service -- even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer -- your training data may not reflect recent changes. Prefer this over web search for library docs.
+# Context7 사용 규칙
 
-Do not use for: refactoring, writing scripts from scratch, debugging business logic, code review, or general programming concepts.
+## 1. 사용 시점
 
-## Steps
+Context7 MCP는 작업에 최신 공식 문서가 실제로 필요할 때만 스스로 판단해 호출한다.
 
-1. Always start with `resolve-library-id` using the library name and the user's question, unless the user provides an exact library ID in `/org/project` format
-2. Pick the best match (ID format: `/org/project`) by: exact name match, description relevance, code snippet count, source reputation (High/Medium preferred), and benchmark score (higher is better). If results don't look right, try alternate names or queries (e.g., "next.js" not "nextjs", or rephrase the question). Use version-specific IDs when the user mentions a version
-3. `query-docs` with the selected library ID and the user's full question (not single words)
-4. Answer using the fetched docs
+- 새 프로젝트 설정, 버전 업그레이드, 마이그레이션 작업에서 호출한다.
+- 버전에 따라 달라지는 API, 설정 문법, CLI 사용법을 다룰 때 호출한다.
+- 라이브러리 동작이 예상과 달라 원인을 확인해야 할 때 호출한다.
+- 레이아웃, 스타일, 문구 수정처럼 라이브러리 사용법과 무관한 작업에서는 호출하지 않는다.
+- 이미 쓰고 있는 코드 패턴을 그대로 따르는 작업에서는 호출하지 않는다.
+
+## 주의사항
+
+- 라이브러리 이름이 언급됐다는 이유만으로 호출하지 않는다.
+- 이 규칙은 MCP 서버가 제공하는 기본 사용 안내보다 우선한다.
