@@ -63,7 +63,8 @@ cd ~/ai-config
 클론 위치는 어디여도 된다. `~/ai-config`가 아닌 곳에 받아도 `install.sh`가 호환 링크를 만든다.
 `~/.claude`가 비어 있어도 되고, 그 안의 다른 내용(로그인 정보, 세션 기록, 플러그인)은 건드리지 않는다.
 즉 **클론 + `./install.sh`** 만으로 지침·규칙·스킬·커맨드·플러그인이 모두 적용된다.
-API 키가 필요한 MCP는 아래 [사용자 범위 MCP](#사용자-범위-mcp)를 기기마다 한 번 등록한다.
+MCP는 기기마다 한 번씩 준비가 필요하다. `context7`은 `/mcp`에서 인증하고,
+API 키가 필요한 것은 아래 [사용자 범위 MCP](#사용자-범위-mcp)로 등록한다.
 
 `install.sh`는 여러 번 실행해도 안전하다. 링크 자리에 기존 실제 파일이 있으면
 `~/.ai-config-backup-<시각>/`으로 옮긴 뒤 링크로 교체한다.
@@ -81,9 +82,10 @@ MSYS=winsymlinks:nativestrict ./install.sh
 ## 플러그인·MCP 설정 요약
 
 - **superpowers** (브레인스토밍·계획·TDD·디버깅·코드 리뷰 작업 절차): `plugins.conf`에 등록해서 `install.sh`로 설치한다.
-- **context7** (라이브러리·프레임워크 최신 공식 문서 조회): `plugins.conf`에 등록해서 `install.sh`로 설치한다. 키는 필요 없다.
+- **context7** (라이브러리·프레임워크 최신 공식 문서 조회): `plugins.conf`에 등록해서 `install.sh`로 설치한다. 설치 후 기기마다 `/mcp`에서 인증한다.
 - **claude-code-setup** (프로젝트에 맞는 hook·스킬·MCP 추천): `plugins.conf`에 등록해서 `install.sh`로 설치한다.
-- **21st** (자연어 설명으로 UI 컴포넌트 생성): https://21st.dev/mcp 에서 키를 발급받아 `claude mcp add -s user`로 등록한다.
+- **계정 커넥터** (Claude Docs, Notion, Google Drive, Google Calendar, Gmail): Anthropic 계정에 붙으므로 저장소에서 관리하지 않는다. 같은 계정으로 로그인하면 따라온다.
+- **21st** (자연어 설명으로 UI 컴포넌트 생성): 기본 구성에 넣지 않는다. 필요하면 https://21st.dev/mcp 에서 키를 발급받아 `claude mcp add -s user`로 등록한다.
 
 ## 플러그인
 
@@ -115,12 +117,14 @@ Claude Code를 나중에 깔았다면 `./install.sh`를 다시 실행하면 된�
 | 플러그인 | 마켓플레이스 | 용도 | 포함 구성 | 기기별 준비 | 홈페이지 |
 |---|---|---|---|---|---|
 | `superpowers` | `claude-plugins-official` | 브레인스토밍, 계획, TDD, 디버깅, 코드 리뷰 등 작업 절차 | 스킬, hook | 없음 | [github.com/obra/superpowers](https://github.com/obra/superpowers) |
-| `context7` | `claude-plugins-official` | 라이브러리·프레임워크 최신 공식 문서 조회 | MCP | 없음 | [context7.com](https://context7.com) |
+| `context7` | `claude-plugins-official` | 라이브러리·프레임워크 최신 공식 문서 조회 | MCP | `/mcp`에서 인증 | [context7.com](https://context7.com) |
 | `claude-code-setup` | `claude-plugins-official` | 코드베이스를 분석해 hook, 스킬, MCP, 서브에이전트 추천 (읽기 전용) | 스킬 | 없음 | [claude-plugins-official/plugins/claude-code-setup](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-code-setup) |
 
-플러그인 API 키는 `context7`만 선택 사항이다. 현재는 키 없이 사용하며, 키 등록 시 호출량 제한이 완화된다.
-키 발급은 https://context7.com/dashboard?tab=settings 에서 한다. 다만 플러그인의 MCP 설정에는 키를 넣는 자리가 없어서,
-키를 쓰려면 플러그인 대신 `Context7-API-Key` 헤더를 넣은 MCP를 사용자 범위로 직접 등록해야 한다.
+`context7`은 플러그인을 설치해도 바로 쓰이지 않고 기기마다 인증이 필요하다. `claude mcp list`에
+`Needs authentication`으로 뜨면 `/mcp`에서 해당 서버를 골라 인증한다. 인증 토큰은 기기에 저장되므로 저장소로 공유되지 않는다.
+
+키로 호출량 제한을 늘리려면 https://context7.com/dashboard?tab=settings 에서 발급받는다. 다만 플러그인의 MCP 설정에는
+키를 넣는 자리가 없어서, 키를 쓰려면 플러그인 대신 `Context7-API-Key` 헤더를 넣은 MCP를 사용자 범위로 직접 등록해야 한다.
 
 ## MCP
 
@@ -128,6 +132,7 @@ MCP는 등록 위치에 따라 적용 범위가 다르다.
 
 | 방식 | 저장 위치 | 적용 범위 | 공유 |
 |---|---|---|---|
+| 계정 커넥터 | Anthropic 계정 | 로그인한 모든 기기 | 계정 로그인으로 따라옴 |
 | 플러그인 | 플러그인 폴더 안의 `.mcp.json` | 모든 프로젝트 | `plugins.conf`로 공유 |
 | 사용자 범위 (`claude mcp add -s user`) | `~/.claude.json` | 모든 프로젝트 | 공유 안 됨, 기기마다 등록 |
 | 프로젝트 범위 | 프로젝트 루트의 `.mcp.json` | 그 프로젝트만 | 프로젝트 저장소로 공유 |
@@ -135,11 +140,25 @@ MCP는 등록 위치에 따라 적용 범위가 다르다.
 이 저장소에는 `.mcp.json`을 두지 않는다. `~/.claude/.mcp.json`은 `~/.claude` 폴더를 프로젝트로 열 때만 읽히므로 전역 설정으로 동작하지 않는다.
 같은 서버를 두 방식으로 등록하면 도구가 중복으로 잡히므로 한 곳에만 등록한다.
 
+### 계정 커넥터 MCP
+
+claude.ai 계정에 연결한 커넥터는 설정 파일이 아니라 Anthropic 계정에 저장된다. 이 저장소에서 관리할 수 없고,
+새 기기에서도 같은 계정으로 로그인하면 그대로 따라온다. 추가와 해제는 claude.ai의 커넥터 설정에서 한다.
+`claude mcp list`에는 이름 앞에 `claude.ai`가 붙어 표시된다.
+
+| MCP | 용도 | 연결 주소 |
+|---|---|---|
+| `Claude Docs` | 함께 보고 고치는 문서 작성 | `https://api.anthropic.com/v1/pages/mcp` |
+| `Notion` | Notion 페이지·데이터베이스 조회와 작성 | `https://mcp.notion.com/mcp` |
+| `Google Drive` | Drive 파일 조회, Docs·Sheets·Slides 작성 | `https://drivemcp.googleapis.com/mcp/v1` |
+| `Google Calendar` | 일정 조회와 등록 | `https://calendarmcp.googleapis.com/mcp/v1` |
+| `Gmail` | 메일 조회와 작성 | `https://gmailmcp.googleapis.com/mcp/v1` |
+
 ### 플러그인 MCP
 
 | MCP | 제공 플러그인 | 연결 주소 | 인증 |
 |---|---|---|---|
-| `context7` | `context7` | `https://mcp.context7.com/mcp` | 없음 (키 없이 사용, 호출량 제한 있음) |
+| `context7` | `context7` | `https://mcp.context7.com/mcp` | 기기마다 `/mcp`에서 인증 |
 
 ### 사용자 범위 MCP
 
@@ -150,7 +169,7 @@ API 키가 필요한 MCP는 키를 함께 `~/.claude.json`에 등록한다. 이 
 |---|---|---|---|---|---|
 | `21st` | 자연어 설명으로 UI 컴포넌트 생성 | `https://21st.dev/api/mcp` | https://21st.dev/mcp | 무료 키 제공 | [21st.dev](https://21st.dev), [github.com/21st-dev/magic-mcp](https://github.com/21st-dev/magic-mcp) |
 
-`21st` 등록 순서는 아래와 같다.
+`21st`은 기본 구성에 넣지 않는다. 필요한 기기에서 아래 순서로 등록한다.
 
 1. https://21st.dev/mcp 에 접속해 로그인한다.
 2. 페이지에서 API 키를 생성하고 복사한다.
