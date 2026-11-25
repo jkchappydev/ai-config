@@ -17,6 +17,7 @@ Claude Code(`~/.claude`)와 Codex(`~/.codex`)의 개인 전역 설정을 한 저
     skills/                # 전역 스킬
     commands/              # 전역 슬래시 커맨드
     plugins.conf           # 자동 설치할 마켓플레이스·플러그인 목록
+    mcp.example.json       # 사용자 범위 MCP 설정 예시 (키 제외, 링크하지 않음)
   codex/
     AGENTS.md              # ★ 공통 개발 지침 본문 (두 도구가 함께 보는 단일 원본)
   install.sh               # 심볼릭 링크 생성
@@ -85,6 +86,34 @@ MSYS=winsymlinks:nativestrict ./install.sh
 - **claude-code-setup** (프로젝트에 맞는 hook·스킬·MCP 추천): `plugins.conf`에 등록해서 `install.sh`로 설치한다.
 - **계정 커넥터** (Claude Docs, Notion, Google Drive, Google Calendar, Gmail): Anthropic 계정에 붙으므로 저장소에서 관리하지 않는다. 같은 계정으로 로그인하면 따라온다.
 - **21st** (자연어 설명으로 UI 컴포넌트 생성): 기본 구성에 넣지 않는다. 필요하면 https://21st.dev/mcp 에서 키를 발급받아 `claude mcp add -s user`로 등록한다.
+
+## 규칙·스킬·커맨드
+
+### 규칙 (`claude/rules/`)
+
+매 세션 전체가 로드되므로 짧고 항상 지켜야 하는 기준만 둔다. 특정 작업에서만 필요한 절차는 스킬로 둔다.
+
+| 파일 | 내용 |
+|---|---|
+| `context7.md` | 최신 공식 문서가 실제로 필요한 작업에서만 context7을 호출하는 기준 |
+
+### 스킬 (`claude/skills/`)
+
+평소에는 설명만 로드되고, 작업이 설명과 맞을 때 본문을 불러온다.
+
+| 스킬 | 용도 |
+|---|---|
+| `design-taste-frontend` | 웹 페이지와 화면을 만들거나 고칠 때 쓰는 프론트엔드 디자인 기준 |
+| `hallmark` | 새 페이지 디자인, 디자인 감사·재설계, URL·스크린샷에서 디자인 추출 |
+| `flow-diagram` | 시스템·API 동작 흐름을 Cobalt 테마 인라인 SVG Artifact로 작성 |
+
+### 커맨드 (`claude/commands/`)
+
+| 커맨드 | 용도 |
+|---|---|
+| `/gh-push` | 현재 프로젝트를 GitHub에 업로드하고 main 브랜치로 푸시 |
+| `/new-project-nextjs` | Next.js 프로젝트를 생성하고 검증한 뒤 GitHub에 업로드 |
+| `/new-project-springboot` | Spring Boot 프로젝트를 생성하고 검증한 뒤 GitHub에 업로드 |
 
 ## 플러그인
 
@@ -187,7 +216,7 @@ claude mcp add -s user --transport http 21st https://21st.dev/api/mcp --header "
 | 경로 | 내용 |
 |---|---|
 | `~/.claude/rules/*.local.md` | 그 기기에서만 적용할 규칙. 매 세션 자동 로드됨 |
-| `~/.claude/references/` | 서버 SSH 접속 정보 등. `remote-server-check`가 읽음 |
+| `~/.claude/references/` | 서버 SSH 접속 정보 등 기기 전용 참고자료 |
 | `~/.claude/skills/synced/` | Claude Code가 만드는 동기화 캐시 |
 | `~/.codex/config.toml` | 모델·프로젝트 신뢰 설정. 기기별 경로가 들어가서 공유하지 않음 |
 | `~/.claude.json` | 사용자 범위 MCP와 API 키. Claude Code가 관리하므로 `claude mcp add`로만 수정 |
