@@ -181,6 +181,11 @@ claude mcp add -s user --transport http 21st https://21st.dev/api/mcp --header "
 
 `-s user`를 빠뜨리면 현재 프로젝트에만 등록된다. 등록 결과는 `claude mcp list`에서 `21st ... ✔ Connected`로 확인한다.
 
+등록 후 `~/.claude.json`에 들어가는 형태는 `claude/mcp.example.json`에 키를 지운 예시로 둔다.
+이 파일은 참고용이며 `install.sh`가 링크하지 않는다. 실제 키는 저장소에 넣지 않는다.
+특정 프로젝트에서만 쓰려면 이 파일을 `.mcp.json`으로 이름을 바꿔 프로젝트 루트에 두고 키를 채운다.
+`.mcp.json`은 프로젝트 저장소에 함께 올라가므로, 키를 채운 파일은 커밋하지 않는다.
+
 ### Codex
 
 플러그인과 `~/.claude.json`은 Claude Code 전용이다. Codex에서 같은 MCP를 쓰려면 그 기기의 `~/.codex/config.toml`에 직접 추가한다.
