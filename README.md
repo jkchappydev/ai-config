@@ -63,8 +63,7 @@ cd ~/ai-config
 클론 위치는 어디여도 된다. `~/ai-config`가 아닌 곳에 받아도 `install.sh`가 호환 링크를 만든다.
 `~/.claude`가 비어 있어도 되고, 그 안의 다른 내용(로그인 정보, 세션 기록, 플러그인)은 건드리지 않는다.
 즉 **클론 + `./install.sh`** 만으로 지침·규칙·스킬·커맨드·플러그인이 모두 적용된다.
-MCP는 기기마다 한 번씩 준비가 필요하다. `context7`은 `/mcp`에서 인증하고,
-API 키가 필요한 것은 아래 [사용자 범위 MCP](#사용자-범위-mcp)로 등록한다.
+MCP는 기기마다 한 번씩 아래 [사용자 범위 MCP](#사용자-범위-mcp)로 등록한다.
 
 `install.sh`는 여러 번 실행해도 안전하다. 링크 자리에 기존 실제 파일이 있으면
 `~/.ai-config-backup-<시각>/`으로 옮긴 뒤 링크로 교체한다.
@@ -82,7 +81,7 @@ MSYS=winsymlinks:nativestrict ./install.sh
 ## 플러그인·MCP 설정 요약
 
 - **superpowers** (브레인스토밍·계획·TDD·디버깅·코드 리뷰 작업 절차): `plugins.conf`에 등록해서 `install.sh`로 설치한다.
-- **context7** (라이브러리·프레임워크 최신 공식 문서 조회): `plugins.conf`에 등록해서 `install.sh`로 설치한다. 설치 후 기기마다 `/mcp`에서 인증한다.
+- **context7** (라이브러리·프레임워크 최신 공식 문서 조회): `npx`로 실행하는 MCP를 `claude mcp add -s user`로 등록한다.
 - **claude-code-setup** (프로젝트에 맞는 hook·스킬·MCP 추천): `plugins.conf`에 등록해서 `install.sh`로 설치한다.
 - **계정 커넥터** (Claude Docs, Notion, Google Drive, Google Calendar, Gmail): Anthropic 계정에 붙으므로 저장소에서 관리하지 않는다. 같은 계정으로 로그인하면 따라온다.
 - **21st** (자연어 설명으로 UI 컴포넌트 생성): 기본 구성에 넣지 않는다. 필요하면 https://21st.dev/mcp 에서 키를 발급받아 `claude mcp add -s user`로 등록한다.
@@ -98,7 +97,6 @@ MSYS=winsymlinks:nativestrict ./install.sh
 marketplace claude-plugins-official anthropics/claude-plugins-official
 
 plugin superpowers@claude-plugins-official
-plugin context7@claude-plugins-official
 plugin claude-code-setup@claude-plugins-official
 ```
 
@@ -117,14 +115,7 @@ Claude Code를 나중에 깔았다면 `./install.sh`를 다시 실행하면 된�
 | 플러그인 | 마켓플레이스 | 용도 | 포함 구성 | 기기별 준비 | 홈페이지 |
 |---|---|---|---|---|---|
 | `superpowers` | `claude-plugins-official` | 브레인스토밍, 계획, TDD, 디버깅, 코드 리뷰 등 작업 절차 | 스킬, hook | 없음 | [github.com/obra/superpowers](https://github.com/obra/superpowers) |
-| `context7` | `claude-plugins-official` | 라이브러리·프레임워크 최신 공식 문서 조회 | MCP | `/mcp`에서 인증 | [context7.com](https://context7.com) |
 | `claude-code-setup` | `claude-plugins-official` | 코드베이스를 분석해 hook, 스킬, MCP, 서브에이전트 추천 (읽기 전용) | 스킬 | 없음 | [claude-plugins-official/plugins/claude-code-setup](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-code-setup) |
-
-`context7`은 플러그인을 설치해도 바로 쓰이지 않고 기기마다 인증이 필요하다. `claude mcp list`에
-`Needs authentication`으로 뜨면 `/mcp`에서 해당 서버를 골라 인증한다. 인증 토큰은 기기에 저장되므로 저장소로 공유되지 않는다.
-
-키로 호출량 제한을 늘리려면 https://context7.com/dashboard?tab=settings 에서 발급받는다. 다만 플러그인의 MCP 설정에는
-키를 넣는 자리가 없어서, 키를 쓰려면 플러그인 대신 `Context7-API-Key` 헤더를 넣은 MCP를 사용자 범위로 직접 등록해야 한다.
 
 ## MCP
 
@@ -154,20 +145,21 @@ claude.ai 계정에 연결한 커넥터는 설정 파일이 아니라 Anthropic 
 | `Google Calendar` | 일정 조회와 등록 | `https://calendarmcp.googleapis.com/mcp/v1` |
 | `Gmail` | 메일 조회와 작성 | `https://gmailmcp.googleapis.com/mcp/v1` |
 
-### 플러그인 MCP
-
-| MCP | 제공 플러그인 | 연결 주소 | 인증 |
-|---|---|---|---|
-| `context7` | `context7` | `https://mcp.context7.com/mcp` | 기기마다 `/mcp`에서 인증 |
-
 ### 사용자 범위 MCP
 
-API 키가 필요한 MCP는 키를 함께 `~/.claude.json`에 등록한다. 이 파일은 저장소 밖에 있어 키가 Git에 올라가지 않는다.
+사용자 범위 MCP는 `~/.claude.json`에 등록한다. 이 파일은 저장소 밖에 있어 API 키가 Git에 올라가지 않는다.
 새 기기에서는 아래 명령을 한 번 실행하고 Claude Code를 다시 시작한다.
 
 | MCP | 용도 | 연결 주소 | 키 발급 홈페이지 | 비용 | 홈페이지 |
 |---|---|---|---|---|---|
+| `context7` | 라이브러리·프레임워크 최신 공식 문서 조회 | `npx -y @upstash/context7-mcp@latest` (로컬 실행) | 필요 없음 | 무료 | [context7.com](https://context7.com) |
 | `21st` | 자연어 설명으로 UI 컴포넌트 생성 | `https://21st.dev/api/mcp` | https://21st.dev/mcp | 무료 키 제공 | [21st.dev](https://21st.dev), [github.com/21st-dev/magic-mcp](https://github.com/21st-dev/magic-mcp) |
+
+`context7`은 Node.js가 설치된 기기에서 아래 명령으로 등록한다.
+
+```bash
+claude mcp add -s user context7 -- npx -y @upstash/context7-mcp@latest
+```
 
 `21st`은 기본 구성에 넣지 않는다. 필요한 기기에서 아래 순서로 등록한다.
 
@@ -179,7 +171,7 @@ API 키가 필요한 MCP는 키를 함께 `~/.claude.json`에 등록한다. 이 
 claude mcp add -s user --transport http 21st https://21st.dev/api/mcp --header "x-api-key: <발급받은 키>"
 ```
 
-`-s user`를 빠뜨리면 현재 프로젝트에만 등록된다. 등록 결과는 `claude mcp list`에서 `21st ... ✔ Connected`로 확인한다.
+`-s user`를 빠뜨리면 현재 프로젝트에만 등록된다. 등록 결과는 `claude mcp list`에서 `✔ Connected`로 확인한다.
 
 등록 후 `~/.claude.json`에 들어가는 형태는 `claude/mcp.example.json`에 키를 지운 예시로 둔다.
 이 파일은 참고용이며 `install.sh`가 링크하지 않는다. 실제 키는 저장소에 넣지 않는다.
