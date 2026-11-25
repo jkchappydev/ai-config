@@ -10,7 +10,7 @@ Claude Code(`~/.claude`)와 Codex(`~/.codex`)의 개인 전역 설정을 한 저
 ```
 ~/ai-config/
   claude/
-    CLAUDE.md              # Claude Code 전역 지침 → codex/AGENTS.md 를 import 만 함
+    CLAUDE.md              # ★ 공통 개발 지침 본문 (Claude Code와 Codex가 함께 보는 단일 원본)
     settings.json          # model, permissions, statusLine, hooks 등
     statusline-command.sh  # 상태줄 스크립트
     rules/                 # 항상 로드되는 추가 규칙
@@ -18,8 +18,6 @@ Claude Code(`~/.claude`)와 Codex(`~/.codex`)의 개인 전역 설정을 한 저
     commands/              # 전역 슬래시 커맨드
     plugins.conf           # 자동 설치할 마켓플레이스·플러그인 목록
     mcp.example.json       # 사용자 범위 MCP 설정 예시 (키 제외, 링크하지 않음)
-  codex/
-    AGENTS.md              # ★ 공통 개발 지침 본문 (두 도구가 함께 보는 단일 원본)
   install.sh               # 심볼릭 링크 생성
 ```
 
@@ -33,22 +31,16 @@ Claude Code(`~/.claude`)와 Codex(`~/.codex`)의 개인 전역 설정을 한 저
 | `~/.claude/rules` | `claude/rules` |
 | `~/.claude/skills` | `claude/skills` |
 | `~/.claude/commands` | `claude/commands` |
-| `~/.codex/AGENTS.md` | `codex/AGENTS.md` |
-| `~/ai-config` | 저장소 루트 (import 경로 호환용) |
+| `~/.codex/AGENTS.md` | `claude/CLAUDE.md` |
 
-## 지침은 AGENTS.md 한 곳에만 쓴다
+## 지침은 CLAUDE.md 한 곳에만 쓴다
 
-Codex는 `~/.codex/AGENTS.md`를 전역 지침으로 직접 읽고, Claude Code는 `~/.claude/CLAUDE.md`의
-`@~/ai-config/codex/AGENTS.md` import를 통해 같은 파일을 읽는다. 따라서 **공통 규칙은 반드시
-`codex/AGENTS.md`에 쓴다.** `claude/CLAUDE.md`에 직접 쓴 내용은 Codex가 보지 못한다.
+공통 지침 본문은 `claude/CLAUDE.md`에만 쓴다. Claude Code는 `~/.claude/CLAUDE.md`로,
+Codex는 `~/.codex/AGENTS.md`로 같은 파일을 링크해서 읽는다. 두 도구가 파일 하나를 함께 보므로
+import나 복사본 없이 한 곳만 고치면 된다.
 
-`CLAUDE.md`의 import 경로를 상대경로(`@../...`)로 바꾸면 안 된다 — `~/.claude/CLAUDE.md`가
-심볼릭 링크이므로 기준 디렉터리가 달라질 수 있다. 홈 기준 경로(`@~/...`)를 유지한다.
-
-이 import는 `~/ai-config`라는 고정 경로를 요구하므로, 저장소를 다른 곳(예: `~/Desktop/ai-config`)에
-클론하면 경로가 해석되지 않는다. 이때 링크는 전부 정상으로 보이는데 지침 본문만 조용히 누락된다.
-그래서 `install.sh`는 저장소 위치와 무관하게 `~/ai-config` -> 저장소 루트 호환 링크를 함께 만들고,
-마지막에 import가 실제로 해석되는지 확인한 뒤 실패하면 종료코드 1로 끝낸다.
+Codex는 `@경로` import를 해석하지 못한다. 그래서 import 대신 링크로 같은 파일을 읽게 한다.
+지침 안에 다른 파일을 `@~/...`로 import하면 Codex는 그 내용을 읽지 못하므로, 공통 지침은 이 파일에 직접 쓴다.
 
 프로젝트 단위 지침은 여전히 도구별로 갈린다. Claude Code는 프로젝트의 `CLAUDE.md`,
 Codex는 프로젝트의 `AGENTS.md`를 읽는다.
@@ -61,7 +53,7 @@ cd ~/ai-config
 ./install.sh
 ```
 
-클론 위치는 어디여도 된다. `~/ai-config`가 아닌 곳에 받아도 `install.sh`가 호환 링크를 만든다.
+클론 위치는 어디여도 된다. `install.sh`가 실제 저장소 위치를 기준으로 링크를 건다.
 `~/.claude`가 비어 있어도 되고, 그 안의 다른 내용(로그인 정보, 세션 기록, 플러그인)은 건드리지 않는다.
 즉 **클론 + `./install.sh`** 만으로 지침·규칙·스킬·커맨드·플러그인이 모두 적용된다.
 MCP는 기기마다 한 번씩 아래 [사용자 범위 MCP](#사용자-범위-mcp)로 등록한다.
@@ -76,7 +68,7 @@ Windows(Git Bash)에서는 심볼릭 링크 생성에 권한이 필요하다. �
 MSYS=winsymlinks:nativestrict ./install.sh
 ```
 
-마지막에 링크와 지침 import를 검증한다. 하나라도 깨져 있으면 종료코드 1로 끝나므로,
+마지막에 링크를 검증한다. 하나라도 깨져 있으면 종료코드 1로 끝나므로,
 `설치 완료.`가 출력되고 종료코드가 0인지 확인하면 된다.
 
 ## 플러그인·MCP 설정 요약

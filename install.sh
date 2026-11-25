@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # ~/.claude, ~/.codex 의 설정 파일을 이 저장소로 심볼릭 링크한다.
 # 여러 번 실행해도 안전하며, 기존 실제 파일은 백업 후 교체한다.
-# 저장소를 어느 경로에 클론해도 동작한다 (~/ai-config 호환 링크를 함께 만든다).
+# 저장소를 어느 경로에 클론해도 동작한다.
 set -euo pipefail
 
 # 심볼릭 링크를 통해 실행해도 실제 저장소 위치를 잡도록 -P 사용
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 BACKUP="$HOME/.ai-config-backup-$(date +%Y%m%d-%H%M%S)"
-COMPAT="$HOME/ai-config"
 
 # 저장소 경로 : 홈 기준 링크 경로
 LINKS=(
@@ -17,7 +16,8 @@ LINKS=(
   "claude/rules:.claude/rules"
   "claude/skills:.claude/skills"
   "claude/commands:.claude/commands"
-  "codex/AGENTS.md:.codex/AGENTS.md"
+  # Codex 도 같은 지침 원본을 읽도록 CLAUDE.md 를 AGENTS.md 자리에 링크한다.
+  "claude/CLAUDE.md:.codex/AGENTS.md"
 )
 
 FAILED=0
@@ -47,30 +47,6 @@ link_one() {
 
   ln -s "$src" "$dest"
   echo "연결: ~/$2 -> $src"
-}
-
-# CLAUDE.md 는 지침 본문을 @~/ai-config/codex/AGENTS.md 로 import 한다.
-# 저장소가 ~/ai-config 가 아닌 곳에 있어도 그 경로가 해석되도록 호환 링크를 만든다.
-link_compat() {
-  if [ "$REPO" = "$COMPAT" ]; then
-    echo "호환 링크 불필요 (저장소가 이미 ~/ai-config)"
-    return
-  fi
-
-  if [ -L "$COMPAT" ] && [ "$(readlink "$COMPAT")" = "$REPO" ]; then
-    echo "이미 연결됨: ~/ai-config"
-    return
-  fi
-
-  # 실제 디렉터리가 있으면 사용자의 다른 클론일 수 있으므로 지우지 않고 백업
-  if [ -e "$COMPAT" ] || [ -L "$COMPAT" ]; then
-    mkdir -p "$BACKUP"
-    mv "$COMPAT" "$BACKUP/ai-config"
-    echo "백업: ~/ai-config -> $BACKUP/ai-config"
-  fi
-
-  ln -s "$REPO" "$COMPAT"
-  echo "연결: ~/ai-config -> $REPO"
 }
 
 # 플러그인은 절대경로와 내려받은 파일 20MB 가 섞여 있어 저장소에 담지 않는다.
@@ -128,7 +104,6 @@ bootstrap_plugins() {
 for pair in "${LINKS[@]}"; do
   link_one "${pair%%:*}" "${pair##*:}"
 done
-link_compat
 
 echo
 echo "=== 플러그인 ==="
@@ -148,20 +123,6 @@ for pair in "${LINKS[@]}"; do
     FAILED=1
   fi
 done
-
-# CLAUDE.md 안의 @~/... import 가 실제로 해석되는지 확인한다.
-# 링크가 다 걸려도 이 import 가 깨지면 공통 지침이 조용히 통째로 누락된다.
-echo
-echo "=== 지침 import 확인 ==="
-while read -r imp; do
-  target="${imp/#@\~/$HOME}"
-  if [ -e "$target" ]; then
-    printf '  %-34s OK\n' "$imp"
-  else
-    printf '  %-34s 대상 없음!\n' "$imp"
-    FAILED=1
-  fi
-done < <(grep -o '^@~[^[:space:]]*' "$REPO/claude/CLAUDE.md" || true)
 
 echo
 if [ "$FAILED" -ne 0 ]; then
