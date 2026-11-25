@@ -6,6 +6,7 @@ claude/rules/*.local.md
 
 # Claude Code가 런타임에 만드는 것
 claude/skills/synced/
+claude/skills/.trash/
 claude/skills/**/page-map.md
 
 # 서버 접속 정보 등 기기 전용 참고자료
