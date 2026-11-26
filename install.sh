@@ -98,7 +98,8 @@ bootstrap_plugins() {
         echo "  알 수 없는 항목 무시: $kind"
         ;;
     esac
-  done < "$conf"
+  # Windows 에서 CRLF 로 체크아웃돼도 항목 끝에 \r 이 붙지 않도록 제거
+  done < <(tr -d '\r' < "$conf")
 }
 
 for pair in "${LINKS[@]}"; do
